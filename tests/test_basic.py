@@ -380,6 +380,72 @@ class TestIt(vmtest.VmTestCase):
             assert b.baz == 3
             """)
 
+    def test_repr(self):
+        self.assert_ok("""\
+        class A(object):
+            def __repr__(self):
+                return 'an A'
+        t = A()
+        print(t)
+        """)
+
+    def test_type_of(self):
+        self.assert_ok("""\
+            class A(object): pass
+            a = A()
+            assert type(a) is A
+            """)
+
+    def test_isinstance(self):
+        self.assert_ok("""\
+            class A(object): pass
+            a = A()
+            assert isinstance(a, A)
+            """)
+
+    def test_dunder_class(self):
+        self.assert_ok("""\
+            class A(object): pass
+            a = A()
+            assert a.__class__ is A
+            """)
+
+    def test_override_add(self):
+        self.assert_ok("""\
+            class Thing(object):
+                def __add__(self, other):
+                    print('whee')
+                    return 2
+            t = Thing()
+            print(t + t)
+            """)
+
+    def test_getattr(self):
+        self.assert_ok("""\
+            class Thing(object):
+                z = 17
+                def __init__(self):
+                    self.x = 23
+            t = Thing()
+            print(getattr(Thing, 'z'))
+            print(getattr(t,'z'))
+            print(getattr(t,'x'))
+            """)
+
+    def test_getattr_data_descriptor(self):
+        self.assert_ok("""\
+            class Descr(object):
+                def __get__(self, obj, cls=None):
+                    return 2
+                def __set__(self, obj, val):
+                    raise NotImplementedError()
+            class Thing(object):
+                des = Descr()
+            t = Thing()
+            print(getattr(Thing, 'des'))
+            print(getattr(t, 'des'))
+            """)
+
     def test_attribute_access(self):
         self.assert_ok("""\
             class Thing(object):
