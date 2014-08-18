@@ -16,6 +16,7 @@ from six.moves import reprlib
 PY3, PY2 = six.PY3, not six.PY3
 
 from .pyobj import Frame, Block, Method, Function, Generator
+import draw
 
 log = logging.getLogger(__name__)
 
@@ -206,11 +207,12 @@ class VirtualMachine(object):
         if arguments:
             op += " %r" % (arguments[0],)
         indent = "    "*(len(self.frames)-1)
-        stack_rep = repper(self.frame.stack)
-        block_stack_rep = repper(self.frame.block_stack)
-
-        log.info("  %sdata: %s" % (indent, stack_rep))
-        log.info("  %sblks: %s" % (indent, block_stack_rep))
+        for frame in reversed(self.frames):
+            stack_rep = repper(frame.stack)
+            block_stack_rep = repper(frame.block_stack)
+            log.info("Frame: %s", frame.f_code.co_name)
+            log.info("  %sdata: %s" % (indent, stack_rep))
+            log.info("  %sblks: %s" % (indent, block_stack_rep))
         log.info("%s%s" % (indent, op))
 
     def dispatch(self, byteName, arguments):
@@ -316,8 +318,9 @@ class VirtualMachine(object):
         self.push_frame(frame)
         while True:
             byteName, arguments, opoffset = self.parse_byte_and_args()
-            if log.isEnabledFor(logging.INFO):
-                self.log(byteName, arguments, opoffset)
+            # if log.isEnabledFor(logging.INFO):
+            #     self.log(byteName, arguments, opoffset)
+            draw.render_vm(self)
 
             # When unwinding the block stack, we need to keep track of why we
             # are doing it.
